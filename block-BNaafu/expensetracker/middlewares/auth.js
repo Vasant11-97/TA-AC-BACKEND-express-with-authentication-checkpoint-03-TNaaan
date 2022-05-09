@@ -1,0 +1,31 @@
+var User = require('../models/User');
+
+module.exports = {
+  loggedInUser: (req, res, next) => {
+    if (req.session && req.session.userId) {
+      next();
+    } else if (req.session && req.session.passport.user) {
+      next();
+    } else {
+      res.redirect('/');
+    }
+  },
+
+  userInfo: (req, res, next) => {
+    // console.log(req.session);
+    var userId = req.session && req.session.userId;
+    // console.log(authId, 'Auth id');
+    if (userId) {
+      User.findById(userId, 'name email', (err, user) => {
+        if (err) return next(err);
+        req.user = user;
+        res.locals.user = user;
+        next();
+      });
+    } else {
+      req.user = null;
+      res.locals.user = null;
+      next();
+    }
+  },
+};
